@@ -1,7 +1,7 @@
 Summary: Kernel module management utilities.
 Name: module-init-tools
 Version: 3.9
-Release: 24%{?dist}
+Release: 25%{?dist}
 License: GPLv2+
 Group: System Environment/Kernel
 Source: http://www.kernel.org/pub/linux/utils/kernel/module-init-tools/module-init-tools-%{version}.tar.bz2
@@ -147,6 +147,10 @@ fi
 %ghost %config(noreplace) %verify(not md5 size mtime) /etc/modprobe.d/local.conf
 
 %changelog
+* Tue Jan 27 2015 David Shea <dshea@redhat.com> - 3.9-25
+- Apply net.bridge sysctl settings when bridge is loaded
+  Resolves: rhbz#1101045
+
 * Fri Apr 25 2014 David Shea <dshea@redhat.com> - 3.9-24
 - change depfile functions to return int
   Related: rhbz#1045169
