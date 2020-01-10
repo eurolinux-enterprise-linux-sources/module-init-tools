@@ -153,10 +153,21 @@ module_is_compatible() {
     if [ ! -e "$tmpdir/all-symvers-$krel-$module_krel" ]; then
         # Symbols exported by the "new" kernel
         if [ ! -e $tmpdir/symvers-$krel ]; then
+            # Accept '.' in the symbol name to handle the .TOC. symbol on ppc
             if [ -e /boot/symvers-$krel.gz ]; then
                 zcat /boot/symvers-$krel.gz \
-                | sed -r -ne 's:^(0x[0]*[0-9a-f]{8}\t[0-9a-zA-Z_]+)\t.*:\1:p'
+                | sed -r -ne 's:^(0x[0]*[0-9a-f]{8}\t[0-9a-zA-Z_.]+)\t.*:\1:p'
             fi > $tmpdir/symvers-$krel
+        fi
+
+        # Symbols exported by the add-on modules of the "new" kernel
+        if [ ! -e "$tmpdir/addon-symvers-$krel" ]; then
+            if [ -e /lib/modules/$krel/extra ] && \
+               [ -n "`find /lib/modules/$krel/extra -type f`" ]; then
+                find /lib/modules/$krel/extra -name '*.ko' \
+                | xargs nm \
+                | sed -nre 's:^[0]*([0-9a-f]{8}) A __crc_(.*):0x\1 \2:p'
+            fi > $tmpdir/addon-symvers-$krel
         fi
 
         # Symbols that other add-on modules of the "old" kernel export
@@ -170,7 +181,9 @@ module_is_compatible() {
             fi > $tmpdir/extra-symvers-$module_krel
         fi
 
-        sort -u $tmpdir/symvers-$krel $tmpdir/extra-symvers-$module_krel \
+        sort -u $tmpdir/symvers-$krel \
+                $tmpdir/extra-symvers-$module_krel \
+                $tmpdir/addon-symvers-$krel \
         > "$tmpdir/all-symvers-$krel-$module_krel"
     fi
 
@@ -345,8 +358,9 @@ remove_modules() {
                             fi
                         done
                     fi
-                    doit rmdir --parents --ignore-fail-on-non-empty \
-                               "$(dirname "$weak_module")"
+                    # Remove the part of the directory beneath weak-updates
+                    ( cd "/lib/modules/$krel/weak-updates" && \
+                        doit rmdir --parents --ignore-fail-on-non-empty "$(dirname "${subpath#/}")" )
                 fi
             done
         done
@@ -380,7 +394,9 @@ remove_kernel() {
     remove_krel=${1:-$(uname -r)}
     weak_modules="/lib/modules/$remove_krel/weak-updates"
     module_has_changed $weak_modules $remove_krel
-    doit rm -rf "$weak_modules"
+
+    # Remove everything beneath the weak-updates directory
+    ( cd "$weak_modules" && doit rm -rf * )
 }
 
 ################################################################################

@@ -1,7 +1,7 @@
 Summary: Kernel module management utilities.
 Name: module-init-tools
 Version: 3.9
-Release: 25%{?dist}
+Release: 26%{?dist}
 License: GPLv2+
 Group: System Environment/Kernel
 Source: http://www.kernel.org/pub/linux/utils/kernel/module-init-tools/module-init-tools-%{version}.tar.bz2
@@ -147,6 +147,18 @@ fi
 %ghost %config(noreplace) %verify(not md5 size mtime) /etc/modprobe.d/local.conf
 
 %changelog
+* Wed Oct 28 2016 Tony Camuso <tcamuso@redhat.com>
+- weak-modules: when adding a module, should collect the symbols from
+  external modules of destination kernel
+  Resolves: rhbz#1284935
+
+- weak-modules: Updating kernel was issuing warnings upon removal of
+  old kernel.
+  Resolves: rhbz#1343376
+
+- weak-modules: weak-modules does not handle periods in symbol names
+  Resolves: rhbz#1389067
+
 * Tue Jan 27 2015 David Shea <dshea@redhat.com> - 3.9-25
 - Apply net.bridge sysctl settings when bridge is loaded
   Resolves: rhbz#1101045
