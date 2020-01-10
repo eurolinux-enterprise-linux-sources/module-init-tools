@@ -16,7 +16,8 @@ Patch1: module-init-tools-show-depends-commands.patch
 Patch2: module-init-tools-fix-gzipped-module-handling-in-depmod.patch
 Patch3: module-init-tools-empty-overrides.patch
 Patch4: reduce-memory-consumption.patch
-PAtch5: version-check.patch
+Patch5: version-check.patch
+Patch6: module-init-tools-rhbz972588.patch
 Exclusiveos: Linux
 Requires: sh-utils
 Provides: modutils = %{version}
@@ -39,6 +40,7 @@ are two examples of loaded and unloaded modules.
 %patch3 -p1 -b .empty-overrides
 %patch4 -p1 -b .reduce-memory
 %patch5 -p1 -b .version-check
+%patch6 -p1 -b .rhbz882791
 
 %build
 export CC=gcc
@@ -95,6 +97,10 @@ fi
 %ghost %config(noreplace) %verify(not md5 size mtime) /etc/modprobe.d/local.conf
 
 %changelog
+* Tue Jun 11 2013 David Cantrell <dcantrell@redhat.com> - 3.9-21.1
+- Fix a SIGSEGV in modinfo when the specified module does not exist
+  Resolves: rhbz#972588
+
 * Fri Oct 12 2012 Martin Sivak <msivak@redhat.com> - 3.9-21
 - Fix deprecated macros in the spec file
   Resolves: rhbz#670653
