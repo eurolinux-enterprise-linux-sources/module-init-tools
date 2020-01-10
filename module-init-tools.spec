@@ -1,7 +1,7 @@
 Summary: Kernel module management utilities.
 Name: module-init-tools
 Version: 3.9
-Release: 21%{?dist}
+Release: 24%{?dist}
 License: GPLv2+
 Group: System Environment/Kernel
 Source: http://www.kernel.org/pub/linux/utils/kernel/module-init-tools/module-init-tools-%{version}.tar.bz2
@@ -17,7 +17,35 @@ Patch2: module-init-tools-fix-gzipped-module-handling-in-depmod.patch
 Patch3: module-init-tools-empty-overrides.patch
 Patch4: reduce-memory-consumption.patch
 Patch5: version-check.patch
-Patch6: module-init-tools-rhbz972588.patch
+Patch6: module-init-tools-rhbz882791.patch
+
+# All of these are for softdep, and to get the code rearranged
+# enough that I could more or less apply patches for softdep.
+# Rebase not possible (or equally as hard) since a rebase would remove options
+# that customers use
+Patch21: 0001-modprobe-rename-some-option-variables.patch
+Patch22: 0002-Rename-flags-to-io_flags.patch
+Patch23: 0003-Add-io_flags-parameter-to-insmod.patch
+Patch24: 0004-modprobe-merge-option-flags-into-a-single-parameter.patch
+Patch25: 0005-modprobe-move-modprobing-from-main-into-separate-fun.patch
+Patch26: 0006-modprobe-fix-various-simple-style-issues-related-to-.patch
+Patch27: 0007-modprobe-reduce-nesting-in-conf-parser.patch
+Patch28: 0008-modprobe-cleanup-indentation-change-in-conf-parser.patch
+Patch29: 0009-modprobe-put-configuration-objects-in-a-struct.patch
+Patch30: 0010-modprobe-enable-calling-do_modprobe-from-within-hand.patch
+Patch31: 0011-modprobe-don-t-modify-the-modname-string-passed-to-d.patch
+Patch32: 0012-modprobe-add-softdep-command.patch
+Patch33: 0013-elfops-remove-errfn_t-from-load_strings.patch
+Patch34: 0014-modprobe-add-simple-softdep-loop-detector.patch
+Patch35: 0015-test-add-softdep-test-modprobe-fix-simple-bugs-in-do.patch
+Patch36: 0016-modprobe-change-softdep-pre-post-to-pre-post.patch
+Patch37: 0017-doc-add-softdep-command.patch
+Patch38: 0018-depmod-generate-modules.softdep.patch
+Patch39: 0019-modprobe-fix-softdep-flags.patch
+
+# Missed the patch where the return type of the depmod functions changed
+Patch40: 0001-depmod-change-depfile-functions-to-return-int.patch
+
 Exclusiveos: Linux
 Requires: sh-utils
 Provides: modutils = %{version}
@@ -41,6 +69,28 @@ are two examples of loaded and unloaded modules.
 %patch4 -p1 -b .reduce-memory
 %patch5 -p1 -b .version-check
 %patch6 -p1 -b .rhbz882791
+
+%patch21 -p1 -b .modprobe-rename
+%patch22 -p1 -b .flags-rename
+%patch23 -p1 -b .insmod-flags
+%patch24 -p1 -b .merge-option-flags
+%patch25 -p1 -b .separate-modprobe-function
+%patch26 -p1 -b .options-style
+%patch27 -p1 -b .conf-nesting
+%patch28 -p1 -b .conf-indent
+%patch29 -p1 -b .config-struct
+%patch30 -p1 -b .do_modprobe-recurse
+%patch31 -p1 -b .no-modify-modname
+%patch32 -p1 -b .softdep
+%patch33 -p1 -b .elfops-no-errfn
+%patch34 -p1 -b .softdep-loop-detection
+%patch35 -p1 -b .test-softdep
+%patch36 -p1 -b .softdep-fixes
+%patch37 -p1 -b .softdep-doc
+%patch38 -p1 -b .softdep-depmod
+%patch39 -p1 -b .softdep-flags
+
+%patch40 -p1 -b .depmod-return
 
 %build
 export CC=gcc
@@ -97,9 +147,17 @@ fi
 %ghost %config(noreplace) %verify(not md5 size mtime) /etc/modprobe.d/local.conf
 
 %changelog
-* Tue Jun 11 2013 David Cantrell <dcantrell@redhat.com> - 3.9-21.1
+* Fri Apr 25 2014 David Shea <dshea@redhat.com> - 3.9-24
+- change depfile functions to return int
+  Related: rhbz#1045169
+
+* Fri Apr 25 2014 David Shea <dshea@redhat.com> - 3.9-23
+- Backport softdep support to module-init-tools-3.9
+  Resolves: rhbz#1045169
+
+* Wed Jun 05 2013 David Cantrell <dcantrell@redhat.com> - 3.9-22
 - Fix a SIGSEGV in modinfo when the specified module does not exist
-  Resolves: rhbz#972588
+  Resolves: rhbz#882791
 
 * Fri Oct 12 2012 Martin Sivak <msivak@redhat.com> - 3.9-21
 - Fix deprecated macros in the spec file
